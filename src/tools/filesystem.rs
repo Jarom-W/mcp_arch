@@ -4,12 +4,12 @@ use crate::tools::common::{tool_error_result, tool_text_result};
 use serde_json::Value;
 use std::path::{Path, PathBuf};
 
-const ALLOWED_READABLE_ROOTS: &[&str] = &[
+pub const ALLOWED_READABLE_ROOTS: &[&str] = &[
     //TODO Make read and write roots in fn is_allowed_path
     "/home/jarom/Projects",
     //Can add more later if it's decided
 ];
-const ALLOWED_WRITABLE_ROOTS: &[&str] = &["/home/jarom/Projects/sandbox"];
+pub const ALLOWED_WRITABLE_ROOTS: &[&str] = &["/home/jarom/Projects/sandbox"];
 
 fn canonicalize_existing_parent(path: &Path) -> Result<PathBuf, String> {
     let Some(parent) = path.parent() else {

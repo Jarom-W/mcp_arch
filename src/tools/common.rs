@@ -23,3 +23,7 @@ pub fn tool_error_result(message: String) -> Value {
         "isError": true
     })
 }
+
+pub fn allowed_roots_description(roots: &[&str]) -> String {
+    roots.join(", ")
+}

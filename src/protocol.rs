@@ -1,9 +1,10 @@
 //Functions that maintain the MCP communication standards and provide functional access to the LLM
 use crate::tools::{
     docker::{list_containers, list_docker_images},
-    filesystem::{list_directory, read_file, write_file},
+    filesystem::{list_directory, read_file, write_file, ALLOWED_READABLE_ROOTS, ALLOWED_WRITABLE_ROOTS},
     git::{git_diff, git_diff_file, git_status},
     system::{active_processes, cpu_information, disk_usage},
+    common::{allowed_roots_description},
 };
 use serde_json::{Value, json};
 use std::io::{self, BufRead, Write};
@@ -85,6 +86,10 @@ fn handle_initialize() -> Value {
 }
 
 fn handle_tools_list() -> Value {
+
+    let read_roots = allowed_roots_description(ALLOWED_READABLE_ROOTS);
+    let write_roots = allowed_roots_description(ALLOWED_WRITABLE_ROOTS);
+
     json!({
         "tools": [
             {
@@ -169,7 +174,7 @@ fn handle_tools_list() -> Value {
             },
             {
                 "name": "read_file",
-                "description": "Read contents of a file at an absolute path.",
+                "description": format!("Read contents of a file at an absolute path. Allowed readable roots: {read_roots}"),
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -190,7 +195,7 @@ fn handle_tools_list() -> Value {
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Absolute path to repo to inspect status, such as /home/jarom/GitHub/Serenity"
+                            "description": "Absolute path to repo to inspect status, such as /home/jarom/GitHub/Repo_Name"
                         },
                     },
                     "required": ["path"]
@@ -228,7 +233,7 @@ fn handle_tools_list() -> Value {
 
             {
                 "name": "write_file",
-                "description": "Writes contents to a file under an allowed project directory. You can find allowed roots for writing in /home/jarom/Projects/mcp_arch/src/tools/filesystem.rs",
+                "description": format!("Writes contents to a file under an allowed project directory. Allowed writable roots: {write_roots}"),
                 "inputSchema": {
                     "type": "object",
                     "properties": {
