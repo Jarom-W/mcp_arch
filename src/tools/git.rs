@@ -1,3 +1,5 @@
+//Git capabilities given to the agent
+
 use crate::tools::common::{tool_error_result, tool_text_result};
 use serde_json::Value;
 

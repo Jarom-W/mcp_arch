@@ -53,6 +53,8 @@ pub fn run_mcp_server(stdin: io::Stdin, mut stdout: io::Stdout) {
     }
 }
 
+//Helper functions to standardize results and errors in JSON-RPC 
+//
 fn json_rpc_result(id: Value, result: Value) -> Value {
     json!({
         "jsonrpc": "2.0",
@@ -69,6 +71,18 @@ fn json_rpc_error(id: Value, code: i64, message: &str) -> Value {
             "code": code,
             "message": message
         }
+    })
+}
+
+fn tool_error(message: &str) -> Value {
+    json!({
+        "content": [
+            {
+                "type": "text",
+                "text": message
+            }
+        ],
+        "isError": true
     })
 }
 
@@ -276,14 +290,3 @@ fn handle_tools_call(msg: &Value) -> Value {
     }
 }
 
-fn tool_error(message: &str) -> Value {
-    json!({
-        "content": [
-            {
-                "type": "text",
-                "text": message
-            }
-        ],
-        "isError": true
-    })
-}

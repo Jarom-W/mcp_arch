@@ -24,6 +24,9 @@ pub fn tool_error_result(message: String) -> Value {
     })
 }
 
+//Used in protocol.rs to concatinate allowed read/write roots to feed to the agent via the
+//'tools/list' function
+
 pub fn allowed_roots_description(roots: &[&str]) -> String {
     roots.join(", ")
 }

@@ -5,11 +5,13 @@ use serde_json::Value;
 use std::path::{Path, PathBuf};
 
 pub const ALLOWED_READABLE_ROOTS: &[&str] = &[
-    //TODO Make read and write roots in fn is_allowed_path
     "/home/jarom/Projects",
     //Can add more later if it's decided
 ];
-pub const ALLOWED_WRITABLE_ROOTS: &[&str] = &["/home/jarom/Projects/sandbox"];
+pub const ALLOWED_WRITABLE_ROOTS: &[&str] = &[
+    "/home/jarom/Projects/sandbox",
+    //Can also add more here too
+];
 
 fn canonicalize_existing_parent(path: &Path) -> Result<PathBuf, String> {
     let Some(parent) = path.parent() else {
@@ -24,7 +26,8 @@ fn canonicalize_existing_parent(path: &Path) -> Result<PathBuf, String> {
 fn is_allowed_path(path: &Path, read: bool) -> Result<bool, String> {
     let parent = canonicalize_existing_parent(path)?;
 
-    if read {
+    if read { //Boolean parameter to determine if you're looking at allowed read/write roots so they
+              //can be different
         for root in ALLOWED_READABLE_ROOTS {
             let root_path = Path::new(root)
                 .canonicalize()
@@ -80,7 +83,7 @@ pub fn read_file(arguments: &Value) -> Value {
         return tool_error_result("path is required".to_string());
     };
 
-    let path = Path::new(path);
+    let path = Path::new(path); //Convert str path into Path type to run checks
 
     if !path.is_absolute() {
         return tool_error_result("Path must be absolute".to_string());

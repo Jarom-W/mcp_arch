@@ -1,9 +1,11 @@
+//Functions exposed to the agent that check on system information
+
 use crate::tools::common::{tool_error_result, tool_text_result};
 use serde_json::Value;
 
 pub fn disk_usage(arguments: &Value) -> Value {
-    let human_readable = arguments["human_readable"].as_bool().unwrap_or(true);
-
+    let human_readable = arguments["human_readable"].as_bool().unwrap_or(true); //Optional clean
+                                                                                //format toggle
     let mut command = std::process::Command::new("df");
 
     if human_readable {
