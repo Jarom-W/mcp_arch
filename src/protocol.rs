@@ -2,7 +2,7 @@
 use crate::tools::{
     docker::{list_containers, list_docker_images},
     filesystem::{list_directory, read_file, write_file, ALLOWED_READABLE_ROOTS, ALLOWED_WRITABLE_ROOTS},
-    git::{git_diff, git_diff_file, git_status},
+    git::{git_diff, git_diff_file, git_status, git_log, git_branch},
     system::{active_processes, cpu_information, disk_usage},
     common::{allowed_roots_description},
 };
@@ -202,6 +202,25 @@ fn handle_tools_list() -> Value {
             },
 
             {
+                "name": "write_file",
+                "description": format!("Writes contents to a file under an allowed project directory. Allowed writable roots: {write_roots}"),
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "Absolute path to the file for writing."
+                        },
+                        "contents": {
+                            "type": "string",
+                            "description": "Full replacement contents for the file in question."
+                        }
+                    },
+                    "required": ["path"]
+                }
+            },
+
+            {
                 "name": "git_status",
                 "description": "Check status of git repository.",
                 "inputSchema": {
@@ -246,23 +265,39 @@ fn handle_tools_list() -> Value {
             },
 
             {
-                "name": "write_file",
-                "description": format!("Writes contents to a file under an allowed project directory. Allowed writable roots: {write_roots}"),
+                "name": "git_log",
+                "description": "Displays recent git commits. Can be limited using the limit property.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Absolute path to the file for writing."
+                            "description": "Absolute path to the git repo."
                         },
-                        "contents": {
-                            "type": "string",
-                            "description": "Full replacement contents for the file in question."
+                        "limit": {
+                            "type": "integer",
+                            "description": "Quantity of commits to display in order from most recent."
                         }
                     },
                     "required": ["path"]
                 }
-            }
+            },
+
+            {
+                "name": "git_branch",
+                "description": "Displays git branches in a repository.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "Absolute path to the git repo."
+                        },
+                    },
+                    "required": ["path"]
+                }
+            },
+
         ]
     })
 }
@@ -286,6 +321,8 @@ fn handle_tools_call(msg: &Value) -> Value {
         "git_diff" => git_diff(arguments),
         "git_diff_file" => git_diff_file(arguments),
         "write_file" => write_file(arguments),
+        "git_log" => git_log(arguments),
+        "git_branch" => git_branch(arguments),
         _ => tool_error(&format!("unknown tool: {tool_name}")),
     }
 }

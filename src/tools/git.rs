@@ -65,9 +65,61 @@ pub fn git_diff_file(arguments: &Value) -> Value {
     tool_text_result(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
+pub fn git_log(arguments: &Value) -> Value {
+    let repo_path = arguments["path"]
+        .as_str()
+        .unwrap_or("/home/jarom/GitHub");
+
+    let limit = arguments["limit"]
+        .as_u64()
+        .unwrap_or(5);
+
+    let output = match std::process::Command::new("git")
+        .arg("-C")
+        .arg(repo_path)
+        .arg("log")
+        .arg("-n")
+        .arg(limit.to_string())
+        .output()
+    {
+        Ok(output) => output,
+        Err(error) => {
+            return tool_error_result(format!(
+                "failed to display git commit logs: {error}"
+            ));
+        }
+    };
+
+    tool_text_result(
+        String::from_utf8_lossy(&output.stdout).to_string()
+    )
+}
+
+pub fn git_branch(arguments: &Value) -> Value {
+    let repo_path = arguments["path"]
+        .as_str()
+        .unwrap_or("/home/jarom/GitHub");
+
+    let output = match std::process::Command::new("git")
+        .arg("-C")
+        .arg(repo_path)
+        .arg("branch")
+        .output()
+    {
+        Ok(output) => output,
+        Err(error) => {
+            return tool_error_result(format!(
+                "failed to display current git branch: {error}"
+            ));
+        }
+    };
+
+    tool_text_result(
+        String::from_utf8_lossy(&output.stdout).to_string()
+    )
+}
+
 //TODO -> Add the following commands
-//git_log(repo_path, limit)
-//git_branch(repo_path)
 //git_list_conflicts(repo_path)
 //git_show_file(repo_path, file_path, ref?)
 //git_add(repo_path, paths)
