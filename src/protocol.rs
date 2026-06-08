@@ -1,8 +1,8 @@
-//Functions that maintain the MCP communication standards and run the stdio service.
+//Functions that maintain the MCP communication standards and provide functional access to the LLM
 use crate::tools::{
     docker::{list_containers, list_docker_images},
     filesystem::{list_directory, read_file, write_file},
-    git::{git_status, git_diff, git_diff_file},
+    git::{git_diff, git_diff_file, git_status},
     system::{active_processes, cpu_information, disk_usage},
 };
 use serde_json::{Value, json};
@@ -161,7 +161,7 @@ fn handle_tools_list() -> Value {
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Absolute path to inspect, such as /home/djragon/Projects"
+                            "description": "Absolute path to inspect, such as /home/jarom/Projects"
                         },
                     },
                     "required": ["path"]
@@ -175,7 +175,7 @@ fn handle_tools_list() -> Value {
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Absolute path to inspect, such as /home/djragon/Projects/test.txt"
+                            "description": "Absolute path to inspect, such as /home/jarom/Projects/test.txt"
                         },
                     },
                     "required": ["path"]
@@ -190,7 +190,7 @@ fn handle_tools_list() -> Value {
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Absolute path to repo to inspect status, such as /home/djragon/GitHub/Serenity"
+                            "description": "Absolute path to repo to inspect status, such as /home/jarom/GitHub/Serenity"
                         },
                     },
                     "required": ["path"]
@@ -204,7 +204,7 @@ fn handle_tools_list() -> Value {
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "Absolute path to repo to inspect difference, such as /home/djragon/GitHub/Serenity"
+                            "description": "Absolute path to repo to inspect difference, such as /home/jarom/GitHub/Serenity"
                         },
                     },
                     "required": ["path"]
@@ -228,7 +228,7 @@ fn handle_tools_list() -> Value {
 
             {
                 "name": "write_file",
-                "description": "Writes contents to a file under an allowed project directory.",
+                "description": "Writes contents to a file under an allowed project directory. You can find allowed roots for writing in /home/jarom/Projects/mcp_arch/src/tools/filesystem.rs",
                 "inputSchema": {
                     "type": "object",
                     "properties": {

@@ -1,11 +1,38 @@
-use serde_json::{Value};
+//Functions that allow the LLM to explore the environment and read/write with scoped access.
+
 use crate::tools::common::{tool_error_result, tool_text_result};
+use serde_json::Value;
 use std::path::{Path, PathBuf};
 
 const ALLOWED_ROOTS: &[&str] = &[
-    "/home/djragon/Projects/sandbox",
+    "/home/jarom/Projects/sandbox",
     //Can add more later if it's decided
 ];
+
+fn canonicalize_existing_parent(path: &Path) -> Result<PathBuf, String> {
+    let Some(parent) = path.parent() else {
+        return Err("path must have a parent directory".to_string());
+    };
+
+    parent
+        .canonicalize()
+        .map_err(|error| format!("failed to canonicalize the parent directory: {error}"))
+}
+
+fn is_allowed_path(path: &Path) -> Result<bool, String> {
+    let parent = canonicalize_existing_parent(path)?;
+
+    for root in ALLOWED_ROOTS {
+        let root_path = Path::new(root)
+            .canonicalize()
+            .map_err(|error| format!("failed to canonicalize allowed root {root}: {error}"))?;
+
+        if parent.starts_with(root_path) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
 
 pub fn list_directory(arguments: &Value) -> Value {
     let path = arguments["path"].as_str();
@@ -48,31 +75,6 @@ pub fn read_file(arguments: &Value) -> Value {
     tool_text_result(output)
 }
 
-fn canonicalize_existing_parent(path: &Path) -> Result<PathBuf, String> {
-    let Some(parent) = path.parent() else {
-        return Err("path must have a parent directory".to_string());
-    };
-
-    parent
-    .canonicalize()
-    .map_err(|error| format!("failed to canonicalize the parent directory: {error}"))
-}
-
-fn is_allowed_path(path: &Path) -> Result<bool, String> {
-    let parent = canonicalize_existing_parent(path)?;
-
-    for root in ALLOWED_ROOTS {
-        let root_path = Path::new(root)
-            .canonicalize()
-            .map_err(|error| format!("failed to canonicalize allowed root {root}: {error}"))?;
-
-        if parent.starts_with(root_path) {
-            return Ok(true);
-        }
-    }
-    Ok(false)
-}
-
 pub fn write_file(arguments: &Value) -> Value {
     let Some(path) = arguments["path"].as_str() else {
         return tool_error_result("path is required".to_string());
@@ -92,8 +94,8 @@ pub fn write_file(arguments: &Value) -> Value {
         Ok(true) => {}
         Ok(false) => {
             return tool_error_result(format!(
-                    "refusing to write outside allowed roots: {}",
-                    path.display()
+                "refusing to write outside allowed roots: {}",
+                path.display()
             ));
         }
         Err(error) => {
@@ -106,8 +108,11 @@ pub fn write_file(arguments: &Value) -> Value {
     }
 
     match std::fs::write(path, contents) {
-        Ok(_) => tool_text_result(format!("wrote {} bytes to {}", contents.len(), path.display())),
+        Ok(_) => tool_text_result(format!(
+            "wrote {} bytes to {}",
+            contents.len(),
+            path.display()
+        )),
         Err(error) => tool_error_result(format!("failed to write file: {error}")),
     }
-    
 }

@@ -1,5 +1,5 @@
-use serde_json::Value;
 use crate::tools::common::{tool_error_result, tool_text_result};
+use serde_json::Value;
 
 pub fn git_status(arguments: &Value) -> Value {
     let repo_path = arguments["path"].as_str();
@@ -37,13 +37,10 @@ pub fn git_diff(arguments: &Value) -> Value {
     let output = match command.output() {
         Ok(output) => output,
         Err(error) => {
-            return tool_error_result(format!(
-                    "failed to check git diff at repository: {error}"
-            ));
+            return tool_error_result(format!("failed to check git diff at repository: {error}"));
         }
     };
     tool_text_result(String::from_utf8_lossy(&output.stdout).to_string())
-
 }
 
 pub fn git_diff_file(arguments: &Value) -> Value {
@@ -60,14 +57,11 @@ pub fn git_diff_file(arguments: &Value) -> Value {
     let output = match command.output() {
         Ok(output) => output,
         Err(error) => {
-            return tool_error_result(format!(
-                    "failed to check git diff at file path: {error}"
-            ));
+            return tool_error_result(format!("failed to check git diff at file path: {error}"));
         }
     };
     tool_text_result(String::from_utf8_lossy(&output.stdout).to_string())
 }
-
 
 //TODO -> Add the following commands
 //git_log(repo_path, limit)
