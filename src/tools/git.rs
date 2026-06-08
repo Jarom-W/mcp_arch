@@ -2,7 +2,7 @@ use serde_json::Value;
 use crate::tools::common::{tool_error_result, tool_text_result};
 
 pub fn git_status(arguments: &Value) -> Value {
-    let repo_path = arguments["repo_path"].as_str();
+    let repo_path = arguments["path"].as_str();
 
     let mut command = std::process::Command::new("git");
 
@@ -23,9 +23,53 @@ pub fn git_status(arguments: &Value) -> Value {
     tool_text_result(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
+pub fn git_diff(arguments: &Value) -> Value {
+    let repo_path = arguments["path"].as_str();
+
+    let mut command = std::process::Command::new("git");
+
+    command.arg("-C");
+
+    command.arg(repo_path.unwrap());
+
+    command.arg("diff");
+
+    let output = match command.output() {
+        Ok(output) => output,
+        Err(error) => {
+            return tool_error_result(format!(
+                    "failed to check git diff at repository: {error}"
+            ));
+        }
+    };
+    tool_text_result(String::from_utf8_lossy(&output.stdout).to_string())
+
+}
+
+pub fn git_diff_file(arguments: &Value) -> Value {
+    let file_path = arguments["path"].as_str();
+
+    let mut command = std::process::Command::new("git");
+
+    command.arg("diff");
+
+    command.arg("--");
+
+    command.arg(file_path.unwrap());
+
+    let output = match command.output() {
+        Ok(output) => output,
+        Err(error) => {
+            return tool_error_result(format!(
+                    "failed to check git diff at file path: {error}"
+            ));
+        }
+    };
+    tool_text_result(String::from_utf8_lossy(&output.stdout).to_string())
+}
+
+
 //TODO -> Add the following commands
-//git_diff(repo_path)
-//git_diff_file(repo_path, file_path)
 //git_log(repo_path, limit)
 //git_branch(repo_path)
 //git_list_conflicts(repo_path)

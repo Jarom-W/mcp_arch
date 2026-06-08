@@ -1,8 +1,8 @@
 //Functions that maintain the MCP communication standards and run the stdio service.
 use crate::tools::{
     docker::{list_containers, list_docker_images},
-    filesystem::{list_directory, read_file},
-    git::git_status,
+    filesystem::{list_directory, read_file, write_file},
+    git::{git_status, git_diff, git_diff_file},
     system::{active_processes, cpu_information, disk_usage},
 };
 use serde_json::{Value, json};
@@ -188,12 +188,60 @@ fn handle_tools_list() -> Value {
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "repo_path": {
+                        "path": {
                             "type": "string",
                             "description": "Absolute path to repo to inspect status, such as /home/djragon/GitHub/Serenity"
                         },
                     },
-                    "required": ["repo_path"]
+                    "required": ["path"]
+                }
+            },
+            {
+                "name": "git_diff",
+                "description": "Check difference of versions in git repository.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "Absolute path to repo to inspect difference, such as /home/djragon/GitHub/Serenity"
+                        },
+                    },
+                    "required": ["path"]
+                }
+            },
+
+            {
+                "name": "git_diff_file",
+                "description": "Check difference of versions in git per file.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "Absolute filepath to file in quesiton to test difference in version."
+                        }
+                    },
+                    "required": ["path"]
+                }
+            },
+
+            {
+                "name": "write_file",
+                "description": "Writes contents to a file under an allowed project directory.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "Absolute path to the file for writing."
+                        },
+                        "contents": {
+                            "type": "string",
+                            "description": "Full replacement contents for the file in question."
+                        }
+                    },
+                    "required": ["path"]
                 }
             }
         ]
@@ -216,6 +264,9 @@ fn handle_tools_call(msg: &Value) -> Value {
         "list_directory" => list_directory(arguments),
         "read_file" => read_file(arguments),
         "git_status" => git_status(arguments),
+        "git_diff" => git_diff(arguments),
+        "git_diff_file" => git_diff_file(arguments),
+        "write_file" => write_file(arguments),
         _ => tool_error(&format!("unknown tool: {tool_name}")),
     }
 }
