@@ -5,7 +5,7 @@ use serde_json::Value;
 
 pub fn disk_usage(arguments: &Value) -> Value {
     let human_readable = arguments["human_readable"].as_bool().unwrap_or(true); //Optional clean
-                                                                                //format toggle
+    //format toggle
     let mut command = std::process::Command::new("df");
 
     if human_readable {
@@ -53,4 +53,129 @@ pub fn active_processes(arguments: &Value) -> Value {
         .join("\n");
 
     tool_text_result(limited_output)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn disk_usage_returns_text_content() {
+        let result = disk_usage(&serde_json::json!({}));
+
+        assert_eq!(result["content"][0]["type"], "text");
+        assert!(result["content"][0]["text"].as_str().is_some());
+    }
+
+    #[test]
+    fn disk_usage_defaults_to_human_readable_output() {
+        let result = disk_usage(&serde_json::json!({}));
+
+        let text = result["content"][0]["text"]
+            .as_str()
+            .expect("disk usage result should contain text");
+
+        assert!(
+            text.contains("Filesystem"),
+            "expected df output header, got: {text}"
+        );
+    }
+
+    #[test]
+    fn disk_usage_accepts_human_readable_false() {
+        let result = disk_usage(&serde_json::json!({
+            "human_readable": false
+        }));
+
+        assert_eq!(result["content"][0]["type"], "text");
+        assert!(result["content"][0]["text"].as_str().is_some());
+    }
+
+    #[test]
+    fn cpu_information_returns_text_content() {
+        let result = cpu_information();
+
+        assert_eq!(result["content"][0]["type"], "text");
+        assert!(result["content"][0]["text"].as_str().is_some());
+    }
+
+    #[test]
+    fn cpu_information_includes_expected_lscpu_fields() {
+        let result = cpu_information();
+
+        let text = result["content"][0]["text"]
+            .as_str()
+            .expect("cpu information result should contain text");
+
+        assert!(
+            text.contains("Architecture") || text.contains("CPU"),
+            "expected lscpu output fields, got: {text}"
+        );
+    }
+
+    #[test]
+    fn active_processes_returns_text_content() {
+        let result = active_processes(&serde_json::json!({}));
+
+        assert_eq!(result["content"][0]["type"], "text");
+        assert!(result["content"][0]["text"].as_str().is_some());
+    }
+
+    #[test]
+    fn active_processes_defaults_to_limited_output() {
+        let result = active_processes(&serde_json::json!({}));
+
+        let text = result["content"][0]["text"]
+            .as_str()
+            .expect("active processes result should contain text");
+
+        assert!(
+            text.lines().count() <= 25,
+            "expected default process output to contain at most 25 lines, got {}",
+            text.lines().count()
+        );
+    }
+
+    #[test]
+    fn active_processes_respects_limit_argument() {
+        let result = active_processes(&serde_json::json!({
+            "limit": 5
+        }));
+
+        let text = result["content"][0]["text"]
+            .as_str()
+            .expect("active processes result should contain text");
+
+        assert!(
+            text.lines().count() <= 5,
+            "expected process output to contain at most 5 lines, got {}",
+            text.lines().count()
+        );
+    }
+
+    #[test]
+    fn active_processes_with_limit_one_returns_only_header_line() {
+        let result = active_processes(&serde_json::json!({
+            "limit": 1
+        }));
+
+        let text = result["content"][0]["text"]
+            .as_str()
+            .expect("active processes result should contain text");
+
+        assert_eq!(text.lines().count(), 1);
+        assert!(
+            text.contains("USER"),
+            "expected ps aux header line, got: {text}"
+        );
+    }
+
+    #[test]
+    fn active_processes_with_limit_zero_returns_empty_text() {
+        let result = active_processes(&serde_json::json!({
+            "limit": 0
+        }));
+
+        assert_eq!(result["content"][0]["text"], "");
+    }
 }
