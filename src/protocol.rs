@@ -1,10 +1,9 @@
 //Functions that maintain the MCP communication standards and provide functional access to the LLM
+use crate::config::path::PathConfig;
 use crate::tools::{
     common::allowed_roots_description,
     docker::{list_containers, list_docker_images},
-    filesystem::{
-        ALLOWED_READABLE_ROOTS, ALLOWED_WRITABLE_ROOTS, list_directory, read_file, write_file,
-    },
+    filesystem::{list_directory, read_file, write_file},
     git::{git_branch, git_diff, git_diff_file, git_log, git_status},
     system::{active_processes, cpu_information, disk_usage},
 };
@@ -102,8 +101,12 @@ fn handle_initialize() -> Value {
 }
 
 fn handle_tools_list() -> Value {
-    let read_roots = allowed_roots_description(ALLOWED_READABLE_ROOTS);
-    let write_roots = allowed_roots_description(ALLOWED_WRITABLE_ROOTS);
+    let config = PathConfig::from_env();
+    let read_roots = allowed_roots_description(&config.readable_roots);
+    let write_roots = allowed_roots_description(&config.writable_roots);
+
+    eprintln!("TOOLS LIST READABLE: {:?}", config.readable_roots);
+    eprintln!("TOOLS LIST WRITABLE: {:?}", config.writable_roots);
 
     json!({
         "tools": [

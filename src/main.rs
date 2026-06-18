@@ -1,9 +1,11 @@
+mod config;
 mod protocol;
 mod tools;
 
 use std::io;
 
 fn main() {
+    dotenvy::dotenv().ok();
     protocol::run_mcp_server(io::stdin(), io::stdout());
 }
 
