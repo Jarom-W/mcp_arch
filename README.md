@@ -20,9 +20,15 @@ entire filesystem.
         "-d",
         "archlinux",
         "--",
-        "/home/$USER/.../mcp_arch/target/debug/mcp_arch"
+        "/home/$USER/path_to_repo/mcp_arch/run_mcp.sh"
       ]
     }
   },
 ```
-5. The LLM client can now run the binary upon initialization and request/run commands.
+5. The shell script included in the root of the repository allows you to define your readable and writable roots. Replace the sample roots in run_mcp.sh with your desired roots. Also change the `exec` command in the same file to the path to your compiled binary.
+6. Make the shell script executable:
+
+```bash
+chmod +x run_mcp.sh
+```
+7. Boot into your LLM of choice with these configurations in place.
