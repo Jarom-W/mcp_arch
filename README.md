@@ -26,6 +26,14 @@ entire filesystem.
   },
 ```
 5. The shell script included in the root of the repository allows you to define your readable and writable roots. Replace the sample roots in run_mcp.sh with your desired roots. Also change the `exec` command in the same file to the path to your compiled binary.
+```bash
+#!/usr/bin/env bash
+
+export MCP_READABLE_ROOTS="/home/jarom/Projects" #Sample readable root. Must be an absolute path.
+export MCP_WRITABLE_ROOTS="/home/jarom/Projects/sandbox" #Sample writable root. Must also be an absolute path.
+
+exec /home/jarom/Projects/mcp_arch/target/debug/mcp_arch #Must be an absolute path to the binary.
+``````
 6. Make the shell script executable:
 
 ```bash
